@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { getParse } from '../utils';
+import { setWorkspaces } from '../workspaces/workspacesSlice';
 
 var EMPTY_SESSION = {
   sessionId: null,
@@ -16,7 +17,8 @@ export const homeSlice = createSlice({
   },
   reducers: {
     logon: (state, action) => {
-      state.session = action.payload;
+      state.session.sessionId = action.payload.sessionId;
+      state.session.userId = action.payload.userId;
       state.error = null;
       state.password = "";
     },
@@ -44,10 +46,29 @@ export const loginAsync = (email, password) => dispatch => {
     var token = user.getSessionToken()
     console.log('Logged in user', user);
     console.log('Session id', token);
-    dispatch(logon({
-      sessionId: token,
-      userId: user.id,
-    }));
+    
+    const workspace = parse.Object.extend('workspace');
+    const query = new parse.Query(workspace);    
+    query.equalTo("creator", parse.User.current());
+    query.find().then((results) => {
+      // You can use the "get" method to get the value of an attribute
+      // Ex: response.get("<ATTRIBUTE_NAME>")
+      console.log("Results: " + results);
+      console.log("Successfully retrieved " + results.length + " workspaces");
+      // Do something with the returned Parse.Object values
+      for (let i = 0; i < results.length; i++) {
+        const wrk = results[i];
+        console.log(wrk.id + ' - ' + wrk.get('name'));
+      }
+      dispatch(logon({
+        sessionId: token,
+        userId: user.id,
+      }));
+      dispatch(setWorkspaces(results));
+    }, (error) => {
+      console.error('Error while fetching workspaces', error);
+      dispatch(setError(JSON.stringify(error)))
+    });        
   }).catch(error => {
     console.error('Error while logging in user', error);
     dispatch(setError(JSON.stringify(error)))

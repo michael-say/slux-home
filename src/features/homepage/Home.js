@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { Workspaces } from '../workspaces/Workspaces';
 import {
   selectSession,
 } from './homeSlice';
-import styles from './Home.module.css';
 import { Signin } from './Signin';
 
 export function Home() {
@@ -13,10 +13,6 @@ export function Home() {
     return <Signin />
   } 
 
-  return (
-    <div>
-      Logon. Workspaces: ...
-    </div>
-  )
+  return <Workspaces />
   
 }
