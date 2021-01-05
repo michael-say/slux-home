@@ -15,7 +15,7 @@ export const workspacesSlice = createSlice({
       state.workspaces.push({
         id: "0",
       })
-      state.windex = state.workspaces.length - 1;
+      state.windex = 0;
       state.newWorkspaceError = null;
     },
     setWIndex: (state, action) => {
@@ -24,20 +24,42 @@ export const workspacesSlice = createSlice({
     setNewWorkspaceName: (state, action) => {
       state.newWorkspaceName = action.payload;
     },
+    setNewWorkspaceError: (state, action) => {
+      state.newWorkspaceError = action.payload;
+    },
+    addedWorkspace: (state, action) => {
+      const index = state.workspaces.length-1;
+      state.workspaces.splice(index, 0, {
+        id: action.payload.id,
+        name: action.payload.name,
+      })
+      state.windex = index;
+      state.newWorkspaceName = "";
+      state.newWorkspaceError = null;
+    },
   },
 });
 
-export const { setWorkspaces, setWIndex, setNewWorkspaceName } = workspacesSlice.actions;
+export const { setWorkspaces, setWIndex, setNewWorkspaceName, addedWorkspace, setNewWorkspaceError } = workspacesSlice.actions;
 
 export const selectWorkspaces = state => state.workspaces.workspaces;
 export const selectWIndex = state => state.workspaces.windex;
 export const selectNewWorkspaceError = state => state.workspaces.newWorkspaceError;
 export const selectNewWorkspaceName = state => state.workspaces.newWorkspaceName;
 
-export const createWorkspaceAsync = (name) => dispatch => {
-  console.log("Creating workspace");
+export const createWorkspaceAsync = (wname) => dispatch => {
+  console.log("Creating workspace...");
   const parse = getParse();
-  // TODO: a) call function b) forbid creating workspaces manually
+  parse.Cloud.run("addspace", { name: wname }).then((answer) => {
+    console.log("success:", answer);
+    dispatch(addedWorkspace({
+      id: answer,
+      name: wname,
+    }));
+  }, (error) => {
+    console.error('Error while adding workspace', error);
+    dispatch(setNewWorkspaceError(JSON.stringify(error)))
+  });  
 };
 
 

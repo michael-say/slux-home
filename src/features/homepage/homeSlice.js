@@ -56,15 +56,20 @@ export const loginAsync = (email, password) => dispatch => {
       console.log("Results: " + results);
       console.log("Successfully retrieved " + results.length + " workspaces");
       // Do something with the returned Parse.Object values
+      let workspaces = []
       for (let i = 0; i < results.length; i++) {
         const wrk = results[i];
         console.log(wrk.id + ' - ' + wrk.get('name'));
+        workspaces.push({
+          id: wrk.id,
+          name: wrk.get('name'),
+        });
       }
       dispatch(logon({
         sessionId: token,
         userId: user.id,
       }));
-      dispatch(setWorkspaces(results));
+      dispatch(setWorkspaces(workspaces));
     }, (error) => {
       console.error('Error while fetching workspaces', error);
       dispatch(setError(JSON.stringify(error)))
