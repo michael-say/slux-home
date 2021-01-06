@@ -6,6 +6,7 @@ export const workspacesSlice = createSlice({
   initialState: {
     newWorkspaceName: "",
     newWorkspaceError: null,
+    communicationError: null,
     workspaces: [],
     windex: -1,
   },
@@ -37,16 +38,20 @@ export const workspacesSlice = createSlice({
     setNewWorkspaceError: (state, action) => {
       state.newWorkspaceError = action.payload;
     },
+    setCommunicationError: (state, action) => { // errors must be a list!
+      state.communicationError = action.payload;
+    },
   },
 });
 
-export const { setWorkspaces, setWIndex, setNewWorkspaceName, addedWorkspace, setNewWorkspaceError } = workspacesSlice.actions;
+export const { setWorkspaces, setWIndex, setNewWorkspaceName, addedWorkspace, setNewWorkspaceError, setCommunicationError } = workspacesSlice.actions;
 
 export const selectWorkspaces = state => state.workspaces.workspaces;
 export const selectWIndex = state => state.workspaces.windex;
 export const selectNewWorkspaceError = state => state.workspaces.newWorkspaceError;
 export const selectNewWorkspaceName = state => state.workspaces.newWorkspaceName;
 export const selectWorkspace = state => state.workspaces.workspaces[state.workspaces.windex];
+export const selectCommunicationError = state => state.workspaces.communicationError;
 
 export const createWorkspaceAsync = (wname) => dispatch => {
   console.log("Creating workspace...");
@@ -68,8 +73,26 @@ export const loadCurrentWorkspaceChannelsAsync = () => dispatch => {
 
 }
 
-export const loadCurrentWorkspaceMembersAsync = () => dispatch => {
-  console.log("Loading workspace members...");
+export const loadCurrentWorkspaceMembersAsync = (workspaceId) => dispatch => {
+  console.log("Loading members of workspace " + workspaceId);
+
+  const parse = getParse();
+  const query = new parse.Query(parse.Role)
+  query.equalTo('name', "wrk_"+workspaceId)
+
+  query.first().then((result) => {
+    if (result) {
+      console.log("Result: " + result);
+
+    } else {
+      const err = "Result is undefined";
+      console.log(err);
+      dispatch(setCommunicationError(err))
+    }
+  }, (error) => {
+    console.error('Error while fetching role', error);
+    dispatch(setCommunicationError(JSON.stringify(error)))
+  });        
 
 }
 

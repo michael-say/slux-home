@@ -12,7 +12,7 @@ export function WorkspaceMembersPanel(props) {
     const dispatch = useDispatch();
 
     if (!members) {
-      dispatch(loadCurrentWorkspaceMembersAsync());
+      dispatch(loadCurrentWorkspaceMembersAsync(workspace.id));
     }
   
     return (

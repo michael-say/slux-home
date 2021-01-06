@@ -3,10 +3,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import {
   selectWIndex,
   selectWorkspaces,
+  selectCommunicationError,
   setWIndex
 } from './workspacesSlice';
 import styles from './Workspaces.module.css';
-import { Tabs, Tab, AppBar } from '@material-ui/core';
+import { Tabs, Tab, AppBar, Snackbar } from '@material-ui/core';
 import { WorkspacePanel } from './WorkspacePanel';
 import { NewWorkspacePanel } from './NewWorkspacePanel';
 
@@ -20,7 +21,10 @@ function a11yProps(index) {
 export function Workspaces() {
   const dispatch = useDispatch();
   const workspaces = useSelector(selectWorkspaces);
+  const commErr = useSelector(selectCommunicationError);
   const value = useSelector(selectWIndex);
+
+  console.log(commErr);
 
   const tabs = []
   const tabPanels = []
@@ -53,6 +57,17 @@ export function Workspaces() {
         </Tabs>
       </AppBar>
       {tabPanels}
+      {commErr && (
+          <Snackbar
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left',
+          }}
+          open={true}
+          autoHideDuration={6000}
+          message={commErr}
+        />
+          )}
     </div>
   );
 }
