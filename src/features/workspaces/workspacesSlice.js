@@ -38,13 +38,20 @@ export const workspacesSlice = createSlice({
     setNewWorkspaceError: (state, action) => {
       state.newWorkspaceError = action.payload;
     },
-    setCommunicationError: (state, action) => { // errors must be a list!
+    setCommunicationError: (state, action) => { 
       state.communicationError = action.payload;
+    },
+    setWorkspaceMembers: (state, action) => { // {wid, members}
+      for (let i = 0; i < state.workspaces.length; i++) {
+        if (state.workspaces[i].id  === action.payload.wid) {
+          state.workspaces[i].members = action.payload.members;
+        }
+      }
     },
   },
 });
 
-export const { setWorkspaces, setWIndex, setNewWorkspaceName, addedWorkspace, setNewWorkspaceError, setCommunicationError } = workspacesSlice.actions;
+export const { setWorkspaces, setWIndex, setNewWorkspaceName, addedWorkspace, setNewWorkspaceError, setCommunicationError, setWorkspaceMembers } = workspacesSlice.actions;
 
 export const selectWorkspaces = state => state.workspaces.workspaces;
 export const selectWIndex = state => state.workspaces.windex;
@@ -82,8 +89,27 @@ export const loadCurrentWorkspaceMembersAsync = (workspaceId) => dispatch => {
 
   query.first().then((result) => {
     if (result) {
-      console.log("Result: " + result);
-
+      console.log("Result.getUsers(): " + result.getUsers());
+        result.getUsers().query().find().then((users) => {
+          console.log("users: " + users.length);
+          let members = []
+          for (let i = 0; i < users.length; i++) {
+            const usr = users[i];
+            console.log(usr.id + ' - ' + usr.get('name'));
+            members.push({
+              id: usr.id,
+              name: usr.get('name'),
+            });
+          }
+          dispatch(setWorkspaceMembers({
+            wid: workspaceId,
+            members: members,
+          }))      
+        }, (error) => {
+          console.error('Error fetching role users', error);
+          dispatch(setCommunicationError(JSON.stringify(error)))
+        }
+      );
     } else {
       const err = "Result is undefined";
       console.log(err);

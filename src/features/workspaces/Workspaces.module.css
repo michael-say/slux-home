@@ -26,11 +26,11 @@
 }
 
 .left {
-  width: 250px;
+  width: 350px;
 }
 
 .center {
-  width: calc(100% - 650px);
+  width: calc(100% - 750px);
 }
 
 .right {

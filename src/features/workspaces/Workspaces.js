@@ -4,10 +4,12 @@ import {
   selectWIndex,
   selectWorkspaces,
   selectCommunicationError,
-  setWIndex
+  setWIndex,
+  setCommunicationError
 } from './workspacesSlice';
 import styles from './Workspaces.module.css';
 import { Tabs, Tab, AppBar, Snackbar } from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
 import { WorkspacePanel } from './WorkspacePanel';
 import { NewWorkspacePanel } from './NewWorkspacePanel';
 
@@ -23,6 +25,14 @@ export function Workspaces() {
   const workspaces = useSelector(selectWorkspaces);
   const commErr = useSelector(selectCommunicationError);
   const value = useSelector(selectWIndex);
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    dispatch(setCommunicationError(null));
+  };
+  
 
   console.log(commErr);
 
@@ -63,10 +73,14 @@ export function Workspaces() {
             vertical: 'bottom',
             horizontal: 'left',
           }}
+          onClose={handleClose}
           open={true}
           autoHideDuration={6000}
-          message={commErr}
-        />
+        >
+          <Alert onClose={handleClose} severity="error">
+          {commErr}
+          </Alert>          
+        </Snackbar>
           )}
     </div>
   );

@@ -2,7 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import styles from './Workspaces.module.css';
-import { Typography, Paper } from '@material-ui/core';
+import { Typography, Paper, List, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
+import PersonIcon from '@material-ui/icons/Person';
+import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import { selectWorkspace, loadCurrentWorkspaceMembersAsync } from './workspacesSlice';
 
 export function WorkspaceMembersPanel(props) {
@@ -10,9 +12,19 @@ export function WorkspaceMembersPanel(props) {
     const workspace = useSelector(selectWorkspace);  
     const members = workspace.members;
     const dispatch = useDispatch();
+    let memberItems = [];
 
     if (!members) {
       dispatch(loadCurrentWorkspaceMembersAsync(workspace.id));
+    } else {
+      for (const member of members) {
+        memberItems.push(<ListItem>
+          <ListItemIcon>
+            <PersonIcon />
+          </ListItemIcon>
+          <ListItemText primary={member.name} />
+        </ListItem>);
+      }
     }
   
     return (
@@ -23,6 +35,17 @@ export function WorkspaceMembersPanel(props) {
           <Typography variant="h5" autoCapitalize="true">Members</Typography>
           {!(workspace.members) && (
             <div>loading...</div>
+          )}
+          {(workspace.members) && (
+            <List component="nav" aria-label="main mailbox folders">
+              {memberItems}
+              <ListItem button>
+                <ListItemIcon>
+                  <PersonAddIcon />
+                </ListItemIcon>
+                <ListItemText primary="Invite Member" />
+              </ListItem>
+            </List>
           )}
       </Paper>
     );

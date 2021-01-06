@@ -17,6 +17,8 @@ Parse.Cloud.define("addspace", async (request) => {
     if (count > 5)
       throw 'Workspace number is limited to 5';
 
+    // Create workspace row
+
     const workspace = Parse.Object.extend('workspace');
     const myNewObject = new workspace();
       
@@ -39,6 +41,16 @@ Parse.Cloud.define("addspace", async (request) => {
 
     newWorkspace.setACL(acl);
     await newWorkspace.save(null, {useMasterKey:true, sessionToken: request.user.getSessionToken()});
+
+    // Create root channel
+    const Channel = Parse.Object.extend('Channel');
+    const chan = new Channel();      
+    chan.set('name', "root");
+    chan.set('creator', user);
+    chan.set('workspace', newWorkspace);
+    chan.set('ACL', acl);
+    await chan.save(null, {useMasterKey:true, sessionToken: request.user.getSessionToken()});
+
 
     return(newWorkspace.id);
 
