@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   selectWIndex,
@@ -7,7 +6,7 @@ import {
   setWIndex
 } from './workspacesSlice';
 import styles from './Workspaces.module.css';
-import { Button, Card, TextField, CardContent, Typography, Paper, Tabs, Tab, AppBar, Box } from '@material-ui/core';
+import { Tabs, Tab, AppBar } from '@material-ui/core';
 import { WorkspacePanel } from './WorkspacePanel';
 import { NewWorkspacePanel } from './NewWorkspacePanel';
 
@@ -28,18 +27,18 @@ export function Workspaces() {
   var i = 0;
 
   for (const w of workspaces) {
-    if (w.id == "0") {
-      tabs.push(<Tab label="New Workspace" {...a11yProps(i)} />);
-      tabPanels.push(<NewWorkspacePanel value={value} index={i} />);
+    if (w.id === "0") {
+      tabs.push(<Tab key={"tab" + i} label="New Workspace" {...a11yProps(i)} />);
+      tabPanels.push(<NewWorkspacePanel key={"wp" + i} value={value} index={i} id={"wp"+i} />);
     } else {
-      tabs.push(<Tab label={w.name} {...a11yProps(i)} />);
-      tabPanels.push(<WorkspacePanel value={value} index={i} />);
+      tabs.push(<Tab key={"tab" + i} label={w.name} {...a11yProps(i)} />);
+      tabPanels.push(<WorkspacePanel key={"wp" + i} value={value} index={i} id={"wp"+i} />);
     }
     i++;
   }
   
   return (
-    <div>
+    <div className={styles.fullheight}>
       <AppBar position="static" color="default">
         <Tabs
           value={value}

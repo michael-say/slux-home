@@ -21,12 +21,6 @@ export const workspacesSlice = createSlice({
     setWIndex: (state, action) => {
       state.windex = action.payload;
     },
-    setNewWorkspaceName: (state, action) => {
-      state.newWorkspaceName = action.payload;
-    },
-    setNewWorkspaceError: (state, action) => {
-      state.newWorkspaceError = action.payload;
-    },
     addedWorkspace: (state, action) => {
       const index = state.workspaces.length-1;
       state.workspaces.splice(index, 0, {
@@ -37,6 +31,12 @@ export const workspacesSlice = createSlice({
       state.newWorkspaceName = "";
       state.newWorkspaceError = null;
     },
+    setNewWorkspaceName: (state, action) => {
+      state.newWorkspaceName = action.payload;
+    },
+    setNewWorkspaceError: (state, action) => {
+      state.newWorkspaceError = action.payload;
+    },
   },
 });
 
@@ -46,6 +46,7 @@ export const selectWorkspaces = state => state.workspaces.workspaces;
 export const selectWIndex = state => state.workspaces.windex;
 export const selectNewWorkspaceError = state => state.workspaces.newWorkspaceError;
 export const selectNewWorkspaceName = state => state.workspaces.newWorkspaceName;
+export const selectWorkspace = state => state.workspaces.workspaces[state.workspaces.windex];
 
 export const createWorkspaceAsync = (wname) => dispatch => {
   console.log("Creating workspace...");
@@ -58,9 +59,18 @@ export const createWorkspaceAsync = (wname) => dispatch => {
     }));
   }, (error) => {
     console.error('Error while adding workspace', error);
-    dispatch(setNewWorkspaceError(JSON.stringify(error)))
+    dispatch(setNewWorkspaceError(JSON.stringify(error)))    
   });  
 };
 
+export const loadCurrentWorkspaceChannelsAsync = () => dispatch => {
+  console.log("Loading workspace channels...");
+
+}
+
+export const loadCurrentWorkspaceMembersAsync = () => dispatch => {
+  console.log("Loading workspace members...");
+
+}
 
 export default workspacesSlice.reducer;

@@ -12,6 +12,61 @@
   width: 400px;
 }
 
+.fullheight {
+  height: calc(100% - 55px);
+}
+
 .line {
   padding: 20px 0 0 0;  
+}
+
+.column {
+  float: left;
+  height: 100%;
+}
+
+.left {
+  width: 250px;
+}
+
+.center {
+  width: calc(100% - 650px);
+}
+
+.right {
+  width: 400px;
+}
+
+.channelspnl {
+  height: calc((100% - 40px)/2);
+  margin: 20px 0 0 20px;
+  padding: 10px;
+}
+
+.memberspnl {
+  height: calc((100% - 40px)/2);
+  margin: 20px 0 0 20px;
+  padding: 10px;
+}
+
+.channelpnl {
+  height: 100%;
+  margin: 20px 0 0 20px;
+  padding: 10px;
+}
+
+.threadpnl {
+  height: 100%;
+  margin: 20px 20px 0 20px;
+  padding: 10px;
+}
+
+.tabpanel {
+  height: 100%;
+}
+
+.tabpanel:after {
+  content: "";
+  display: table;
+  clear: both;
 }

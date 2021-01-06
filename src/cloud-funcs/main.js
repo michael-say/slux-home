@@ -27,7 +27,9 @@ Parse.Cloud.define("addspace", async (request) => {
 
     // Creating new role
     var roleName = "wrk_" + newWorkspace.id;
-    var newRole = new Parse.Role(roleName, new Parse.ACL());
+    var roleAcl = new Parse.ACL();
+    var newRole = new Parse.Role(roleName, roleAcl);
+    roleAcl.setRoleReadAccess(newRole, true); //give read access to Role
     newRole.getUsers().add(user);
     savedRole = await newRole.save(null, {useMasterKey:true, sessionToken: request.user.getSessionToken()});
 
