@@ -7,7 +7,7 @@ export const workspacesSlice = createSlice({
     newWorkspaceName: "",
     newWorkspaceError: null,
     communicationError: null,
-    workspaces: [],
+    workspaces: [], // {id, name, channels: [], members: [], addMember: false, addChannel: false}
     windex: -1,
   },
   reducers: {
@@ -48,10 +48,32 @@ export const workspacesSlice = createSlice({
         }
       }
     },
+    setWorkspaceAddMember: (state, action) => { // {wid, true/false}
+    for (let i = 0; i < state.workspaces.length; i++) {
+        if (state.workspaces[i].id  === action.payload.wid) {
+          state.workspaces[i].addMember = action.payload.addMember;
+        }
+      }
+    },
+    setWorkspaceAddChannel: (state, action) => { // {wid, true/false}
+    for (let i = 0; i < state.workspaces.length; i++) {
+        if (state.workspaces[i].id  === action.payload.wid) {
+          state.workspaces[i].addChannel = action.payload.addChannel;
+        }
+      }
+    },
+    setWorkspaceChannels: (state, action) => { // {wid, channels}
+      for (let i = 0; i < state.workspaces.length; i++) {
+        if (state.workspaces[i].id  === action.payload.wid) {
+          state.workspaces[i].channels = action.payload.channels;
+        }
+      }
+    },
   },
 });
 
-export const { setWorkspaces, setWIndex, setNewWorkspaceName, addedWorkspace, setNewWorkspaceError, setCommunicationError, setWorkspaceMembers } = workspacesSlice.actions;
+export const { setWorkspaces, setWIndex, setNewWorkspaceName, addedWorkspace, setNewWorkspaceError, setCommunicationError, 
+  setWorkspaceMembers, setWorkspaceChannels, setWorkspaceAddMember, setWorkspaceAddChannel } = workspacesSlice.actions;
 
 export const selectWorkspaces = state => state.workspaces.workspaces;
 export const selectWIndex = state => state.workspaces.windex;
@@ -75,9 +97,36 @@ export const createWorkspaceAsync = (wname) => dispatch => {
   });  
 };
 
-export const loadCurrentWorkspaceChannelsAsync = () => dispatch => {
-  console.log("Loading workspace channels...");
+export const loadCurrentWorkspaceChannelsAsync = (wid) => dispatch => {
+  console.log("Loading workspace channels...", wid);
 
+  const parse = getParse();
+  const channel = parse.Object.extend('Channel');
+  const Workspace = parse.Object.extend('workspace');
+  var workspace = new Workspace();
+  workspace.set('id', wid);
+  const query = new parse.Query(channel);
+  query.equalTo("workspace", workspace);
+  query.find().then((results) => {
+    console.log("Successfully retrieved " + results.length + " channels");
+    // Do something with the returned Parse.Object values
+    let channels = []
+    for (let i = 0; i < results.length; i++) {
+      const chn = results[i];
+      console.log(chn.id + ' - ' + chn.get('name'));
+      channels.push({
+        id: chn.id,
+        name: chn.get('name'),
+      });
+    }
+    dispatch(setWorkspaceChannels({
+      wid: wid,
+      channels: channels,
+    }))
+  }, (error) => {
+    console.error('Error while fetching channels', error);
+    dispatch(setCommunicationError(JSON.stringify(error)))
+  });        
 }
 
 export const loadCurrentWorkspaceMembersAsync = (workspaceId) => dispatch => {

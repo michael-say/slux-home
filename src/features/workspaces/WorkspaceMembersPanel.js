@@ -5,7 +5,7 @@ import styles from './Workspaces.module.css';
 import { Typography, Paper, List, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
 import PersonIcon from '@material-ui/icons/Person';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
-import { selectWorkspace, loadCurrentWorkspaceMembersAsync } from './workspacesSlice';
+import { selectWorkspace, loadCurrentWorkspaceMembersAsync, setWorkspaceAddMember } from './workspacesSlice';
 
 export function WorkspaceMembersPanel(props) {
     const { index } = props;
@@ -13,6 +13,9 @@ export function WorkspaceMembersPanel(props) {
     const members = workspace.members;
     const dispatch = useDispatch();
     let memberItems = [];
+    const handleAddMember = () => {
+      dispatch(setWorkspaceAddMember({wid: workspace.id, addMember: true}));
+    };
 
     if (!members) {
       dispatch(loadCurrentWorkspaceMembersAsync(workspace.id));
@@ -39,7 +42,7 @@ export function WorkspaceMembersPanel(props) {
           {(workspace.members) && (
             <List component="nav" aria-label="main mailbox folders">
               {memberItems}
-              <ListItem button>
+              <ListItem button onClick={handleAddMember}>
                 <ListItemIcon>
                   <PersonAddIcon />
                 </ListItemIcon>
