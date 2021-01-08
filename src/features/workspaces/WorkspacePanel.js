@@ -71,6 +71,7 @@ export function WorkspacePanel(props) {
             type="email"
             value={newMemberEmail}
             onChange={e => dispatch(setNewMemberEmail({wid: workspace.id, newMemberEmail: e.target.value}))}
+            onKeyDown={e => {if (e.keyCode == 13) {e.preventDefault(); handleAddMember()}}}
             fullWidth
           />
         </DialogContent>
@@ -98,6 +99,7 @@ export function WorkspacePanel(props) {
             fullWidth
             value={newChannelName}
             onChange={e => dispatch(setNewChannelName({wid: workspace.id, newChannelName: e.target.value}))}
+            onKeyDown={e => {if (e.keyCode == 13) {e.preventDefault(); handleAddChannel()}}}
           />
         </DialogContent>
         <DialogActions>

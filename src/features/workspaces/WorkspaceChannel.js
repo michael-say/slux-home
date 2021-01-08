@@ -77,6 +77,7 @@ export function WorkspaceChannel(props) {
               value={channel.newPostMessage}
               onChange={e => dispatch(setNewPostMessage({wid: workspace.id, chid: channel.id, message: e.target.value}))}
               onKeyDown={e => {if (e.keyCode == 13) {
+                e.preventDefault(); 
                 dispatch(postAsync(workspace.id, channel.id, channel.newPostMessage, getParse().User.current().getEmail()));
                 dispatch(setNewPostMessage({wid: workspace.id, chid: channel.id, message: ""}));
               }}}

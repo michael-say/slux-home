@@ -8,7 +8,7 @@ import {
   createWorkspaceAsync,
 } from './workspacesSlice';
 import styles from './Workspaces.module.css';
-import { Typography, Box, TextField, Button } from '@material-ui/core';
+import { Typography, Box, TextField, Button, Paper } from '@material-ui/core';
 
 export function NewWorkspacePanel(props) {
     const { children, value, index, ...other } = props;
@@ -16,13 +16,36 @@ export function NewWorkspacePanel(props) {
     const dispatch = useDispatch();
     const error = useSelector(selectNewWorkspaceError);
     const name = useSelector(selectNewWorkspaceName);
-
+    const createWorkspace = () => dispatch(createWorkspaceAsync(name));
+  
     let nameInput;
   
     if (error != null) {
-      nameInput = <TextField className={styles.textfield} error helperText={error} required id="name" label="Workspace Title" variant="outlined" value={name} onChange={e => dispatch(setNewWorkspaceName(e.target.value))} />
+      nameInput = <TextField 
+        fullWidth 
+        className={styles.textfield} 
+        error 
+        helperText={error} 
+        required 
+        id="name" 
+        label="Workspace Title" 
+        variant="outlined" 
+        value={name} 
+        onChange={e => dispatch(setNewWorkspaceName(e.target.value))} 
+        onKeyDown={e => {if (e.keyCode == 13) {e.preventDefault(); dispatch(createWorkspaceAsync(name))}}}
+      />
     } else {
-      nameInput = <TextField className={styles.textfield} required id="name" label="Workspace Title" variant="outlined" value={name} onChange={e => dispatch(setNewWorkspaceName(e.target.value))} />
+      nameInput = <TextField 
+        fullWidth 
+        className={styles.textfield} 
+        required 
+        id="name" 
+        label="Workspace Title" 
+        variant="outlined" 
+        value={name} 
+        onChange={e => dispatch(setNewWorkspaceName(e.target.value))} 
+        onKeyDown={e => {if (e.keyCode == 13) {e.preventDefault(); dispatch(createWorkspaceAsync(name))}}}
+      />
     }
 
     return (
@@ -34,17 +57,19 @@ export function NewWorkspacePanel(props) {
         className={styles.panel}
         {...other}
       >
-          <Box p={3}>
+          <Paper>
+          <Box p={3} >
             <Typography>Create New Workspace</Typography>
             <form noValidate autoComplete="off">
               <div className={styles.line}>
                   {nameInput}
               </div>
               <div className={styles.line}>
-                <Button fullWidth variant="contained" color="secondary" onClick={() => dispatch(createWorkspaceAsync(name))}>Submit</Button>
+                <Button fullWidth variant="contained" color="secondary" onClick={createWorkspace}>Submit</Button>
               </div>
             </form>
           </Box>
+          </Paper>
       </div>
     );
   }
