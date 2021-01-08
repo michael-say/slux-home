@@ -7,7 +7,7 @@ export const workspacesSlice = createSlice({
     newWorkspaceName: "",
     newWorkspaceError: null,
     communicationError: null,
-    workspaces: [], // {id, name, channels: [], members: [], addMember: false, addChannel: false}
+    workspaces: [], // {id, name, channels: [], members: [], addMember: false, addChannel: false, newChannelName: "", newMemberEmail: ""}
     windex: -1,
   },
   reducers: {
@@ -52,6 +52,7 @@ export const workspacesSlice = createSlice({
     for (let i = 0; i < state.workspaces.length; i++) {
         if (state.workspaces[i].id  === action.payload.wid) {
           state.workspaces[i].addMember = action.payload.addMember;
+          state.workspaces[i].newMemberEmail = "";
         }
       }
     },
@@ -59,6 +60,7 @@ export const workspacesSlice = createSlice({
     for (let i = 0; i < state.workspaces.length; i++) {
         if (state.workspaces[i].id  === action.payload.wid) {
           state.workspaces[i].addChannel = action.payload.addChannel;
+          state.workspaces[i].newChannelName = "";
         }
       }
     },
@@ -69,11 +71,24 @@ export const workspacesSlice = createSlice({
         }
       }
     },
+    setNewChannelName: (state, action) => { // {wid, newChannelName}
+      for (let i = 0; i < state.workspaces.length; i++) {
+        if (state.workspaces[i].id  === action.payload.wid) {
+          state.workspaces[i].newChannelName = action.payload.newChannelName;
+        }
+      }
+    },
+    setNewMemberEmail: (state, action) => { // {wid, newMemberEmail}
+    for (let i = 0; i < state.workspaces.length; i++) {
+      if (state.workspaces[i].id  === action.payload.wid) {
+        state.workspaces[i].newMemberEmail = action.payload.newMemberEmail;
+      }
+    } 
   },
-});
+}});
 
 export const { setWorkspaces, setWIndex, setNewWorkspaceName, addedWorkspace, setNewWorkspaceError, setCommunicationError, 
-  setWorkspaceMembers, setWorkspaceChannels, setWorkspaceAddMember, setWorkspaceAddChannel } = workspacesSlice.actions;
+  setWorkspaceMembers, setWorkspaceChannels, setWorkspaceAddMember, setWorkspaceAddChannel, setNewChannelName, setNewMemberEmail} = workspacesSlice.actions;
 
 export const selectWorkspaces = state => state.workspaces.workspaces;
 export const selectWIndex = state => state.workspaces.windex;
@@ -94,6 +109,30 @@ export const createWorkspaceAsync = (wname) => dispatch => {
   }, (error) => {
     console.error('Error while adding workspace', error);
     dispatch(setNewWorkspaceError(JSON.stringify(error)))    
+  });  
+};
+
+export const addChannnelAsync = (wid, name) => dispatch => {
+  console.log("Creating channel...");
+  const parse = getParse();
+  parse.Cloud.run("addchannel", { name: name, wid: wid }).then((answer) => {
+    console.log("success:", answer);
+    dispatch(loadCurrentWorkspaceChannelsAsync(wid));
+  }, (error) => {
+    console.error('Error while adding channel', error);
+    dispatch(setCommunicationError(JSON.stringify(error)))
+  });  
+};
+
+export const addMemberAsync = (wid, email) => dispatch => {
+  console.log("Adding member...");
+  const parse = getParse();
+  parse.Cloud.run("addmember", { email: email, wid: wid }).then((answer) => {
+    console.log("success:", answer);
+    dispatch(loadCurrentWorkspaceMembersAsync(wid));
+  }, (error) => {
+    console.error('Error while adding member', error);
+    dispatch(setCommunicationError(JSON.stringify(error)))
   });  
 };
 

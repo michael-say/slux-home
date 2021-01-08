@@ -5,7 +5,7 @@ import { WorkspaceChannelsPanel } from './WorkspaceChannelsPanel';
 import { WorkspaceMembersPanel } from './WorkspaceMembersPanel';
 import { WorkspaceChannel } from './WorkspaceChannel';
 import { WorkspaceThread } from './WorkspaceThread';
-import { setWorkspaceAddMember, selectWorkspace, setWorkspaceAddChannel } from './workspacesSlice';
+import { setWorkspaceAddMember, selectWorkspace, setWorkspaceAddChannel, addChannnelAsync, setNewChannelName, setNewMemberEmail, addMemberAsync } from './workspacesSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, Button } from '@material-ui/core';
 
@@ -14,6 +14,8 @@ export function WorkspacePanel(props) {
     const workspace = useSelector(selectWorkspace);  
     const addingMember = workspace.addMember;
     const addingChannel = workspace.addChannel;
+    const newChannelName = workspace.newChannelName;
+    const newMemberEmail = workspace.newMemberEmail;
     const dispatch = useDispatch();
 
     const handleCloseAddMember = () => {
@@ -22,6 +24,14 @@ export function WorkspacePanel(props) {
     const handleCloseAddChannel = () => {
       dispatch(setWorkspaceAddChannel({wid: workspace.id, addChannel: false}));
     };
+    const handleAddChannel = () => {
+      dispatch(setWorkspaceAddChannel({wid: workspace.id, addChannel: false}));
+      dispatch(addChannnelAsync(workspace.id, newChannelName));
+    }
+    const handleAddMember = () => {
+      dispatch(setWorkspaceAddMember({wid: workspace.id, addChannel: false}));
+      dispatch(addMemberAsync(workspace.id, newMemberEmail));
+    }
 
     return (
       <div
@@ -59,6 +69,8 @@ export function WorkspacePanel(props) {
             id="name"
             label="Email Address"
             type="email"
+            value={newMemberEmail}
+            onChange={e => dispatch(setNewMemberEmail({wid: workspace.id, newMemberEmail: e.target.value}))}
             fullWidth
           />
         </DialogContent>
@@ -66,7 +78,7 @@ export function WorkspacePanel(props) {
           <Button onClick={handleCloseAddMember} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleCloseAddMember} color="primary">
+          <Button onClick={handleAddMember} color="primary">
             Invite
           </Button>
         </DialogActions>
@@ -84,13 +96,15 @@ export function WorkspacePanel(props) {
             id="name"
             label="Name"
             fullWidth
+            value={newChannelName}
+            onChange={e => dispatch(setNewChannelName({wid: workspace.id, newChannelName: e.target.value}))}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseAddChannel} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleCloseAddChannel} color="primary">
+          <Button onClick={handleAddChannel} color="primary">
             Create
           </Button>
         </DialogActions>

@@ -39,6 +39,33 @@ export const homeSlice = createSlice({
 
 export const { logon, logout, setEmail, setPassword, setError } = homeSlice.actions;
 
+export const loadWorkspacesAsync = () => dispatch => {
+  const parse = getParse();
+  const workspace = parse.Object.extend('WorkspaceUser');
+  const query = new parse.Query(workspace);    
+  query.equalTo("User", parse.User.current());
+  query.include("Workspace");
+  query.find().then((results) => {
+    console.log("Successfully retrieved " + results.length + " workspaces");
+    // Do something with the returned Parse.Object values
+    let workspaces = []
+    for (let i = 0; i < results.length; i++) {
+      const membership = results[i];
+      const wId = membership.get('Workspace').id;
+      const wName = membership.get('Workspace').get('name');
+      console.log(wId + ' - ' + wName);
+      workspaces.push({
+        id: wId,
+        name: wName,
+      });
+    }
+    dispatch(setWorkspaces(workspaces));
+  }, (error) => {
+    console.error('Error while fetching workspaces', error);
+    dispatch(setError(JSON.stringify(error)))
+  });        
+}
+
 export const loginAsync = (email, password) => dispatch => {
   console.log("logging in");
   const parse = getParse();
@@ -47,33 +74,12 @@ export const loginAsync = (email, password) => dispatch => {
     console.log('Logged in user', user);
     console.log('Session id', token);
     
-    const workspace = parse.Object.extend('workspace');
-    const query = new parse.Query(workspace);    
-    query.equalTo("creator", parse.User.current());
-    query.find().then((results) => {
-      // You can use the "get" method to get the value of an attribute
-      // Ex: response.get("<ATTRIBUTE_NAME>")
-      console.log("Results: " + results);
-      console.log("Successfully retrieved " + results.length + " workspaces");
-      // Do something with the returned Parse.Object values
-      let workspaces = []
-      for (let i = 0; i < results.length; i++) {
-        const wrk = results[i];
-        console.log(wrk.id + ' - ' + wrk.get('name'));
-        workspaces.push({
-          id: wrk.id,
-          name: wrk.get('name'),
-        });
-      }
-      dispatch(logon({
-        sessionId: token,
-        userId: user.id,
-      }));
-      dispatch(setWorkspaces(workspaces));
-    }, (error) => {
-      console.error('Error while fetching workspaces', error);
-      dispatch(setError(JSON.stringify(error)))
-    });        
+    dispatch(logon({
+      sessionId: token,
+      userId: user.id,
+    }));
+    dispatch(loadWorkspacesAsync());
+
   }).catch(error => {
     console.error('Error while logging in user', error);
     dispatch(setError(JSON.stringify(error)))

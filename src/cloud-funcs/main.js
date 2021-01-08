@@ -20,11 +20,9 @@ Parse.Cloud.define("addspace", async (request) => {
     // Create workspace row
 
     const workspace = Parse.Object.extend('workspace');
-    const myNewObject = new workspace();
-      
+    const myNewObject = new workspace();      
     myNewObject.set('name', request.params.name);
     myNewObject.set('creator', user);
-
     newWorkspace = await myNewObject.save(null, {useMasterKey:true, sessionToken: request.user.getSessionToken()});
 
     // Creating new role
@@ -42,6 +40,13 @@ Parse.Cloud.define("addspace", async (request) => {
     newWorkspace.setACL(acl);
     await newWorkspace.save(null, {useMasterKey:true, sessionToken: request.user.getSessionToken()});
 
+    const WorkspaceUser = Parse.Object.extend('WorkspaceUser');
+    const membership = new WorkspaceUser();
+    membership.set('Workspace', newWorkspace);
+    membership.set('User', user);
+    membership.set('ACL', acl);
+    await membership.save(null, {useMasterKey:true, sessionToken: request.user.getSessionToken()});
+
     // Create root channel
     const Channel = Parse.Object.extend('Channel');
     const chan = new Channel();      
@@ -55,3 +60,91 @@ Parse.Cloud.define("addspace", async (request) => {
     return(newWorkspace.id);
 
 });
+
+Parse.Cloud.define("addchannel", async (request) => {
+    if (!request.user) {
+        throw 'Unauthorized';
+    }
+
+    if (!request.params.name || request.params.name == "") {
+        throw 'Name is required';
+    }
+
+    if (!request.params.wid || request.params.wid == "") {
+        throw 'wid is required';
+    }
+
+    var user = request.user;
+
+    const Workspace = Parse.Object.extend('workspace');
+    const workspace = new Workspace();
+    workspace.set("id", request.params.wid);
+
+    var wrkrole = new Parse.Role("wrk_" + request.params.wid, new Parse.ACL());
+    var acl = new Parse.ACL();
+    acl.setRoleReadAccess(wrkrole, true); //give read access to Role
+    acl.setWriteAccess(user, true); //give write access to Role
+
+    // Create root channel
+    const Channel = Parse.Object.extend('Channel');
+    const chan = new Channel();      
+    chan.set('name', request.params.name);
+    chan.set('creator', user);
+    chan.set('workspace', workspace);
+    chan.set('ACL', acl);
+    await chan.save(null, {useMasterKey:true, sessionToken: request.user.getSessionToken()});
+
+
+    return(chan.id);
+
+});
+
+Parse.Cloud.define("addmember", async (request) => {
+    if (!request.user) {
+        throw 'Unauthorized';
+    }
+
+    if (!request.params.email || request.params.email == "") {
+        throw 'email is required';
+    }
+
+    if (!request.params.wid || request.params.wid == "") {
+        throw 'wid is required';
+    }
+
+    const qUser = new Parse.Query(Parse.User);
+    qUser.equalTo("email", request.params.email);
+    const user = await qUser.first({useMasterKey:true});
+    if (!user) {
+        throw 'User not found';
+    }
+
+    const query = new Parse.Query(Parse.Role);
+    query.equalTo("name", "wrk_" + request.params.wid);
+    const role = await query.first({useMasterKey:true, sessionToken: request.user.getSessionToken()});
+    if (!role) {
+        throw 'Role not found';
+    }
+    role.getUsers().add(user);
+    await role.save(null, {useMasterKey:true, sessionToken: request.user.getSessionToken()});
+
+    var wrkrole = new Parse.Role("wrk_" + request.params.wid, new Parse.ACL());
+    var acl = new Parse.ACL();
+    acl.setRoleReadAccess(wrkrole, true); 
+    acl.setRoleWriteAccess(wrkrole, true);    
+
+    const Workspace = Parse.Object.extend('workspace');
+    const workspace = new Workspace();
+    workspace.set("id", request.params.wid);
+
+    const WorkspaceUser = Parse.Object.extend('WorkspaceUser');
+    const membership = new WorkspaceUser();
+    membership.set('Workspace', workspace);
+    membership.set('User', user);
+    membership.set('ACL', acl);
+    await membership.save(null, {useMasterKey:true, sessionToken: request.user.getSessionToken()});
+
+
+    return;
+});
+
