@@ -148,3 +148,47 @@ Parse.Cloud.define("addmember", async (request) => {
     return;
 });
 
+
+Parse.Cloud.define("post", async (request) => {
+    if (!request.user) {
+        throw 'Unauthorized';
+    }
+
+    if (!request.params.message || request.params.message == "") {
+        throw 'message is required';
+    }
+
+    if (!request.params.channelId || request.params.channelId == "") {
+        throw 'channelId is required';
+    }
+
+    if (!request.params.wid || request.params.wid == "") {
+        throw 'wid is required';
+    }
+    
+    var user = request.user;
+
+    // TODO: validate if user is a member of workspace
+    // TODO: validate if channel belongs to workspace
+
+    const Channel = Parse.Object.extend('Channel');
+    const channel = new Channel();
+    channel.set("id", request.params.channelId);
+
+    var wrkrole = new Parse.Role("wrk_" + request.params.wid, new Parse.ACL());
+    var acl = new Parse.ACL();
+    acl.setRoleReadAccess(wrkrole, true); //give read access to Role
+    acl.setWriteAccess(user, true); //give write access to Role
+
+    const Posts = Parse.Object.extend('Posts');
+    const post = new Posts();
+    post.set('Channel', channel);
+    post.set('Message', request.params.message);
+    post.set('Author', user);
+    post.set('ACL', acl);
+    post.set('Date', new Date());
+    await post.save(null, {useMasterKey:true, sessionToken: request.user.getSessionToken()});
+    
+    return;
+});
+

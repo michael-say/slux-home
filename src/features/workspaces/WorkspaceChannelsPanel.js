@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import styles from './Workspaces.module.css';
 import { Typography, Paper, List, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
-import { selectWorkspace, loadCurrentWorkspaceChannelsAsync, setWorkspaceAddChannel } from './workspacesSlice';
+import { selectWorkspace, loadCurrentWorkspaceChannelsAsync, setWorkspaceAddChannel, selectWorkspaceChannel } from './workspacesSlice';
 import AddIcon from '@material-ui/icons/Add';
 
 export function WorkspaceChannelsPanel(props) {
@@ -21,8 +21,8 @@ export function WorkspaceChannelsPanel(props) {
       dispatch(loadCurrentWorkspaceChannelsAsync(workspace.id));
     } else {
       for (const ch of channels) {
-        channelsItems.push(<ListItem button>
-          <ListItemText primary={"# " + ch.name} />
+        channelsItems.push(<ListItem button onClick={e => dispatch(selectWorkspaceChannel({wid: workspace.id, chid: ch.id}))}>
+          <ListItemText primary={"# " + ch.name}  />
         </ListItem>);
       }
     }

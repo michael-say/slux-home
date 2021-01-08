@@ -1,5 +1,37 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getParse } from '../utils';
+import { getParse, getClient } from '../utils';
+
+/* 
+  WORKSPACE:
+
+  id: "asdasd",
+  name: "Workspace 1",
+  channels: [
+    {
+      id: 34,
+      name: "root",
+      newPostMessage: "",
+      posts: [
+        date: "",
+        author: "User1",
+        message: "Some post",
+      ]
+    }
+  ],
+  members: [
+    {
+      id: 123,
+      name: "User1"
+    }
+  ],
+  addMember: false,
+  addChannel: false,
+  newChannelName: "",
+  newMemberEmail: "",
+  currentChannelId: null,
+*/
+
+//slux.b4a.io
 
 export const workspacesSlice = createSlice({
   name: 'workspaces',
@@ -79,22 +111,72 @@ export const workspacesSlice = createSlice({
       }
     },
     setNewMemberEmail: (state, action) => { // {wid, newMemberEmail}
-    for (let i = 0; i < state.workspaces.length; i++) {
-      if (state.workspaces[i].id  === action.payload.wid) {
-        state.workspaces[i].newMemberEmail = action.payload.newMemberEmail;
+      for (let i = 0; i < state.workspaces.length; i++) {
+        if (state.workspaces[i].id  === action.payload.wid) {
+          state.workspaces[i].newMemberEmail = action.payload.newMemberEmail;
+        }
+      } 
+    },
+    selectWorkspaceChannel: (state, action) => { // {wid, chid}
+      for (let i = 0; i < state.workspaces.length; i++) {
+        if (state.workspaces[i].id  === action.payload.wid) {
+          state.workspaces[i].currentChannelId = action.payload.chid;
+          break;
+        }
+      }      
+    },
+    postAdded: (state, action) => { // {wid, chid, email, message}
+      for (let i = 0; i < state.workspaces.length; i++) {
+        if (state.workspaces[i].id  === action.payload.wid) {
+          for (let j=0; j<state.workspaces[i].channels.length; j++ ) {
+            if (state.workspaces[i].channels[j].id === action.payload.chid || (action.payload.chid === "" && state.workspaces[i].channels[j].name==="root")) {
+              if (!state.workspaces[i].channels[j].posts) {
+                state.workspaces[i].channels[j].posts = [];
+              }
+              state.workspaces[i].channels[j].posts.push({
+                date: new Date(),
+                message: action.payload.message,
+                author: action.payload.email,
+              });
+            }
+          }
+        }
+      }      
+    },
+    setChannelPosts: (state, action) => { // {wid, chid, posts[]}
+      for (let i = 0; i < state.workspaces.length; i++) {
+        if (state.workspaces[i].id  === action.payload.wid) {
+          for (let j=0; j<state.workspaces[i].channels.length; j++ ) {
+            if (state.workspaces[i].channels[j].id === action.payload.chid) {
+              state.workspaces[i].channels[j].posts = action.payload.posts;
+            }
+          }
+        }
       }
-    } 
-  },
+    },
+    setNewPostMessage: (state, action) => { // {wid, chid, message}
+      for (let i = 0; i < state.workspaces.length; i++) {
+        if (state.workspaces[i].id  === action.payload.wid) {
+          for (let j=0; j<state.workspaces[i].channels.length; j++ ) {
+            if (state.workspaces[i].channels[j].id === action.payload.chid) {
+              state.workspaces[i].channels[j].newPostMessage = action.payload.message;
+            }
+          }
+        }
+      }      
+  }
 }});
 
 export const { setWorkspaces, setWIndex, setNewWorkspaceName, addedWorkspace, setNewWorkspaceError, setCommunicationError, 
-  setWorkspaceMembers, setWorkspaceChannels, setWorkspaceAddMember, setWorkspaceAddChannel, setNewChannelName, setNewMemberEmail} = workspacesSlice.actions;
+  setWorkspaceMembers, setWorkspaceChannels, setWorkspaceAddMember, setWorkspaceAddChannel, setNewChannelName, setNewMemberEmail, 
+  postAdded, selectWorkspaceChannel, setNewPostMessage, setChannelPosts} = workspacesSlice.actions;
 
 export const selectWorkspaces = state => state.workspaces.workspaces;
 export const selectWIndex = state => state.workspaces.windex;
 export const selectNewWorkspaceError = state => state.workspaces.newWorkspaceError;
 export const selectNewWorkspaceName = state => state.workspaces.newWorkspaceName;
 export const selectWorkspace = state => state.workspaces.workspaces[state.workspaces.windex];
+export const selectCurrentChannelId = state => state.workspaces.workspaces[state.workspaces.windex].currentChannelId;
 export const selectCommunicationError = state => state.workspaces.communicationError;
 
 export const createWorkspaceAsync = (wname) => dispatch => {
@@ -110,6 +192,42 @@ export const createWorkspaceAsync = (wname) => dispatch => {
     console.error('Error while adding workspace', error);
     dispatch(setNewWorkspaceError(JSON.stringify(error)))    
   });  
+};
+
+export const loadChannelPostsAsync = (wid, chid) => dispatch => {
+  console.log("Loading posts of channel "+chid);
+  const parse = getParse();
+
+  const Channel = parse.Object.extend('Channel');
+  var channel = new Channel();
+  channel.set('id', chid);
+  
+
+  const Posts = parse.Object.extend('Posts');
+  const query = new parse.Query(Posts);
+  query.include("Author");
+  query.equalTo("Channel", channel);
+
+  query.find().then((results) => {
+    console.log("Successfully retrieved " + results.length + " posts");
+    let posts = []
+    
+    for (let i = 0; i < results.length; i++) {
+      const chn = results[i];
+      posts.push({
+        date: chn.get('Date'),
+        author: chn.get('Author').get('name'),
+        message: chn.get('Message'),
+      });
+    }
+
+    dispatch(setChannelPosts({wid: wid, chid: chid, posts: posts}));
+    
+  }, (error) => {
+    console.error('Error while fetching posts`', error);
+    dispatch(setCommunicationError(JSON.stringify(error)))
+  });        
+  
 };
 
 export const addChannnelAsync = (wid, name) => dispatch => {
@@ -136,6 +254,19 @@ export const addMemberAsync = (wid, email) => dispatch => {
   });  
 };
 
+export const postAsync = (wid, chid, message, email) => dispatch => {
+  console.log("Adding post...");
+  const parse = getParse();
+  parse.Cloud.run("post", { message: message, wid: wid, channelId: chid }).then((answer) => {
+    console.log("success:", answer);
+    dispatch(postAdded({wid: wid, chid: chid, email: email, message: message}));
+  }, (error) => {
+    console.error('Error while adding post', error);
+    dispatch(setCommunicationError(JSON.stringify(error)))
+  });  
+};
+
+
 export const loadCurrentWorkspaceChannelsAsync = (wid) => dispatch => {
   console.log("Loading workspace channels...", wid);
 
@@ -150,6 +281,7 @@ export const loadCurrentWorkspaceChannelsAsync = (wid) => dispatch => {
     console.log("Successfully retrieved " + results.length + " channels");
     // Do something with the returned Parse.Object values
     let channels = []
+    let selectedChannelId = null;
     for (let i = 0; i < results.length; i++) {
       const chn = results[i];
       console.log(chn.id + ' - ' + chn.get('name'));
@@ -157,11 +289,21 @@ export const loadCurrentWorkspaceChannelsAsync = (wid) => dispatch => {
         id: chn.id,
         name: chn.get('name'),
       });
+      if (chn.get('name')==="root") {
+        selectedChannelId = chn.id;
+      }
     }
+
     dispatch(setWorkspaceChannels({
       wid: wid,
       channels: channels,
     }))
+    
+    dispatch(selectWorkspaceChannel({
+      wid: wid,
+      chid: selectedChannelId,
+    }));
+
   }, (error) => {
     console.error('Error while fetching channels', error);
     dispatch(setCommunicationError(JSON.stringify(error)))

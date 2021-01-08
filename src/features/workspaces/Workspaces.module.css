@@ -13,7 +13,7 @@
 }
 
 .fullheight {
-  height: calc(100% - 55px);
+  height: calc(100% - 70px);
 }
 
 .line {
@@ -38,13 +38,13 @@
 }
 
 .channelspnl {
-  height: calc((100% - 40px)/2);
+  height: calc((100% - 60px)/2);
   margin: 20px 0 0 20px;
   padding: 10px;
 }
 
 .memberspnl {
-  height: calc((100% - 40px)/2);
+  height: calc((100% - 20px)/2);
   margin: 20px 0 0 20px;
   padding: 10px;
 }
@@ -53,6 +53,68 @@
   height: 100%;
   margin: 20px 0 0 20px;
   padding: 10px;
+}
+
+.postsPnl {
+  height: calc(100% - 160px);
+  margin-bottom: 20px;
+  overflow-y: scroll;
+}
+
+.appheader {
+  padding: 12px 0 0 35px;
+}
+
+.applogo {
+  float: left;
+}
+.userinfo {
+  text-align: right;  
+}
+
+.userinfo:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.postsHdrPnl {
+  margin-bottom: 10px;
+}
+.post {
+  margin-top: 20px;
+}
+
+.authorpnl {
+  float: left;
+  color: darkcyan;
+  font-weight: bold;;
+}
+
+.datepnl {
+  font-size: 80%;
+  text-align: right;
+  color: darkslategrey;
+  padding-right: 10px;
+}
+
+.chnamepnl {
+  float: left;
+  font-size: 150%;
+}
+.reloadpnl {
+  text-align: right;
+}
+
+.reloadpnl:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+.messagepnl {
+  clear: both;
 }
 
 .threadpnl {

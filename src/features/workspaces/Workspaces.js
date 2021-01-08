@@ -12,6 +12,7 @@ import { Tabs, Tab, AppBar, Snackbar } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import { WorkspacePanel } from './WorkspacePanel';
 import { NewWorkspacePanel } from './NewWorkspacePanel';
+import { selectEmail } from '../homepage/homeSlice';
 
 function a11yProps(index) {
   return {
@@ -25,6 +26,7 @@ export function Workspaces() {
   const workspaces = useSelector(selectWorkspaces);
   const commErr = useSelector(selectCommunicationError);
   const value = useSelector(selectWIndex);
+  const email = useSelector(selectEmail);
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
@@ -54,6 +56,10 @@ export function Workspaces() {
   return (
     <div className={styles.fullheight}>
       <AppBar position="static" color="default">
+      <div className={styles.appheader}>
+        <div className={styles.applogo}>User: {email}</div>
+        <div className={styles.userinfo}></div>
+      </div>
         <Tabs
           value={value}
           onChange={(event, newValue) => {
